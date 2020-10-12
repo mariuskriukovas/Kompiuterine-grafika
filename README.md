@@ -1,0 +1,2 @@
+# Kompiuterine-grafika
+Kompiuterinė grafika
