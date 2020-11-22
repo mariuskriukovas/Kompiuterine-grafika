@@ -18,6 +18,7 @@ Animuoti atskirai visas 4 transformacijas: T_1,…, T_4:
 
 Veluojant 1 savaitę.
 
- /Users/marius.kriukovas@vinted.com/Desktop/Screenshot\ 2020-11-23\ at\ 01.24.57.png
+ 
+ ![Alt text](http://Users/marius.kriukovas@vinted.com/Desktop/Screenshot\ 2020-11-23\ at\ 01.24.57.png "Laiptai")
 
 
