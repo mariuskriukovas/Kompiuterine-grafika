@@ -1,0 +1,294 @@
+<html>
+
+<head>
+    <title>Marius Kriukovas ND 2</title>
+    <script type="text/javascript" src="src/three.js"></script>
+    <script type="text/javascript" src="src/jquery-1.9.0.js"></script>
+    <script type="text/javascript" src="src/TrackballControls.js"></script>
+    <script type="text/javascript" src="src/stats.js"></script>
+    <script type="text/javascript" src="src/dat.gui.js"></script>
+    <style>
+        body {
+            /* set margin to 0 and overflow to hidden, to go fullscreen */
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Div which will hold the Output -->
+<div id="WebGL-output">
+</div>
+
+<!-- Javascript code that runs our Three.js examples -->
+<script type="text/javascript">
+
+
+    var scene = null;
+    var camera = null;
+    var renderer = null;
+    var gui = null;
+    var controls = null;
+
+    function init() {
+        // create a scene, that will hold all our elements such as objects, cameras and lights.
+        scene = new THREE.Scene();
+
+        // create a camera, which defines where we're looking at.
+        camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+        // create a render and set the size
+        renderer = new THREE.WebGLRenderer();
+        renderer.setClearColor(0xEEEEEE, 1.0);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMapEnabled = true;
+
+    }
+
+    function initControls() {
+        gui = new dat.GUI();
+
+        controls = new function () {
+            this.STEPS_COUNT = 10;
+            this.RADIUS = 5;
+            this.ANGLE = 15;
+        }
+
+        gui.add(controls, 'STEPS_COUNT', 0, 50);
+        gui.add(controls, 'RADIUS', 0, 25);
+        gui.add(controls, 'ANGLE', 0, 30);
+    }
+
+    function createPlane(deltaY) {
+
+        const planeDimension = 80
+        // create the ground plane
+        var planeGeometry = new THREE.PlaneGeometry(planeDimension, planeDimension);
+        var planeMaterial = new THREE.MeshLambertMaterial({
+            color: 'rgb(240,248,255)',
+            transparent: true,
+            opacity: 0.2
+        });
+
+        var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+        plane.receiveShadow = true;
+
+        // rotate and position the plane
+        plane.rotation.x = -0.5 * Math.PI;
+        plane.position.x = 0
+        plane.position.y = deltaY - 10
+        plane.position.z = 0
+
+        return plane;
+    }
+
+    function degToRad(deg) {
+        var pi = Math.PI;
+        return deg * (pi / 180);
+    }
+
+
+    // once everything is loaded, we run our Three.js stuff.
+    $(function () {
+
+        init();
+        initControls();
+
+        // add the plane to the scene
+        var plane = createPlane(0);
+        scene.add(plane);
+
+        var rightStair = new THREE.Shape();
+        rightStair.moveTo(0, 0);
+        rightStair.quadraticCurveTo(7, -2, 9, -1);
+        rightStair.lineTo(9, 0);
+        rightStair.lineTo(9, 4);
+        rightStair.lineTo(0, 4);
+        rightStair.lineTo(0, 0);
+
+        var leftStair = new THREE.Shape();
+        leftStair.moveTo(0, 0);
+        leftStair.lineTo(0, 4);
+        leftStair.lineTo(9, 4);
+        leftStair.lineTo(9, 0);
+        leftStair.quadraticCurveTo(1, -2, 0, -1);
+        leftStair.lineTo(0, 0);
+
+
+        var stepWidth = 4;
+        var stairLen = 15
+
+        function initStairGeometry(stair) {
+            return new THREE.ExtrudeGeometry(stair, {
+                depth: 0.5,
+                bevelEnabled: true,
+                bevelThickness: 0.3,
+                bevelSize: 0.2
+            });
+        }
+
+        function initLeftStairGeometry() {
+            var stair = new THREE.Shape();
+
+            stair.moveTo(0, 0);
+            stair.quadraticCurveTo(0, -5, stairLen, 0);
+            stair.lineTo(stairLen, 4);
+            stair.lineTo(0, 3);
+            stair.lineTo(0, 0);
+
+            return initStairGeometry(stair)
+        }
+
+
+        function initRightStairGeometry() {
+            var stair = new THREE.Shape();
+            stair.moveTo(0, 0);
+            stair.quadraticCurveTo(0, 5, stairLen, 0);
+            stair.lineTo(stairLen, -4);
+            stair.lineTo(0, -3);
+            stair.lineTo(0, 0);
+
+            return initStairGeometry(stair)
+        }
+
+        var leftStairGeometry = initLeftStairGeometry();
+        var rightStairGeometry = initRightStairGeometry();
+
+        var stairMaterial = new THREE.MeshLambertMaterial({
+            color: 0xc04000
+        });
+
+        var metalMaterial = new THREE.MeshLambertMaterial({
+            color: 'rgb(220,220,220)'
+        })
+
+        function createRailGeometry(points,tubularSegments, radius, radialSegments, closed)
+        {
+            var tubeGeometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points),
+                tubularSegments, radius, radialSegments, closed)
+            return new THREE.Mesh(tubeGeometry, metalMaterial);
+        }
+
+        function drawMyStairs(controls) {
+
+            var angle = Math.PI / 90 * controls.ANGLE
+            var lowerRail = []
+            var upperRail = [];
+
+            var x = -10;
+            var z = -5;
+            
+            var deltaX = 10;
+            var deltaY = 8;
+            var deltaZ = 0;
+
+            var railHeight = 10
+
+            for (var i = 0; i < Math.round(controls.STEPS_COUNT); i++) {
+
+                var stair = null
+                var step = null
+
+                if (i % 2 === 0) {
+                    stair = new THREE.Mesh(leftStairGeometry, stairMaterial);
+                } else {
+                    stair = new THREE.Mesh(rightStairGeometry, stairMaterial);
+                }
+
+                stair.castShadow = true;
+
+                x += Math.sin(angle * i) * (-controls.RADIUS)
+                z += Math.cos(angle * i) * (controls.RADIUS)
+
+                stair.position.x = x;
+                stair.position.z = z;
+                stair.rotation.x = Math.PI / 2;
+
+                if (i % 2 === 1) {
+                    stair.position.x += 0
+                    stair.position.z += 2
+                }
+
+                step = new THREE.Object3D();
+                step.add(stair);
+
+                step.position.y = (i + 0.5) * 2.5;
+                step.rotation.y = angle * i;
+
+                deltaX = x * Math.cos(angle * i) + z * Math.sin(angle * i);
+                deltaZ = z * Math.cos(angle * i) - x * Math.sin(angle * i);
+
+                scene.add(step);
+                deltaY += 2.5;
+
+                var v1 = Math.sin(angle * i) * stepWidth / 2;
+                var v2 = Math.cos(angle * i) * stepWidth / 2;
+
+                if (controls.STEPS_COUNT > 1) {
+                    deltaX += v1;
+                    deltaZ += v2;
+
+                    var loverPoint = new THREE.Vector3(deltaX, deltaY -railHeight + 0.4, deltaZ)
+                    var upperPoint = new THREE.Vector3(deltaX, deltaY +railHeight + 0.8, deltaZ)
+
+                    lowerRail.push(loverPoint);
+                    upperRail.push(upperPoint);
+
+                    scene.add(createRailGeometry([upperPoint, loverPoint], 20, 0.35, 8, false))
+
+                    deltaX -= v1;
+                    deltaZ -= v2;
+                }
+
+                deltaX += v1 * 2 + v2 * 2;
+                deltaZ += v2 * 2 - v1 * 2;
+            }
+
+            if (Math.round(controls.STEPS_COUNT) > 1) {
+                scene.add(createRailGeometry(upperRail,50, 0.5, 8, false))
+                scene.add(createRailGeometry(lowerRail,500, 1, 20, false));
+            }
+            scene.add(createPlane(deltaY * 1.7));
+        }
+
+        var angle = degToRad(180)
+        var radius = 150
+
+        camera.position.x = radius * Math.cos(angle);
+        camera.position.z = radius * Math.sin(angle);
+        camera.position.y = 30;
+        camera.lookAt(scene.position);
+
+        var ambiColor = "#0c0c0c";
+        var ambientLight = new THREE.AmbientLight(ambiColor);
+        scene.add(ambientLight);
+
+        // add spotlight for the shadows
+        var spotLight = new THREE.SpotLight(0xffffff);
+        spotLight.position.set(-40, 60, -10);
+        spotLight.castShadow = true;
+        scene.add(spotLight);
+
+        // add the output of the renderer to the html element
+        $("#WebGL-output").append(renderer.domElement);
+        var controls1 = new THREE.TrackballControls(camera, renderer.domElement);
+
+        render();
+
+        function render() {
+            drawMyStairs(controls)
+            renderer.render(scene, camera);
+            requestAnimationFrame(render);
+            controls1.update();
+            for (var i = scene.children.length - 1; i >= 3; i--) {
+                obj = scene.children[i];
+                scene.remove(obj);
+            }
+        }
+    });
+</script>
+</body>
+
+</html>
