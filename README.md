@@ -17,3 +17,4 @@ Animuoti atskirai visas 4 transformacijas: T_1,…, T_4:
 ### ND 2 įkeltas lapkričio 23 d.
 
 Veluojant 1 savaitę.
+
