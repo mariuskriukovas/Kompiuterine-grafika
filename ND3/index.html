@@ -36,9 +36,9 @@
     var cameraControls = null;
     var pointsObj = null
 
-    var sphereObj;// TODO rename
+    var sphereObj;
 
-    var SphereArgs = { // TODO rename
+    var SphereArgs = {
         radius : 2,
         positionDiff : 10
     }
@@ -85,11 +85,11 @@
 
         scene.add(plane);
 
-        var ambiColor = 'rgb(12,12,12)'  // TODO trinti lauk
-        var ambientLight = new THREE.AmbientLight(ambiColor);
+        var ambiColor = 'rgb(12,12,12)'
+        var ambientLight = new THREE.AmbientLight(ambiColor)
         scene.add(ambientLight);
 
-        var spotLight = new THREE.SpotLight('rgb(255,255,255)', 1);  // TODO trinti lauk
+        var spotLight = new THREE.SpotLight('rgb(255,255,255)', 1)
         spotLight.position.set(50, 80, 30);
         spotLight.castShadow = true;
         scene.add(spotLight);
