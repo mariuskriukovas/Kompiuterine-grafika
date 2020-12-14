@@ -18,5 +18,6 @@ Animuoti atskirai visas 4 transformacijas: T_1,…, T_4:
 
 Veluojant 1 savaitę.
 
+### ND 3 a) įkeltas gruodžio 14 d.
 
 
