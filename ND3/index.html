@@ -1,0 +1,316 @@
+<html>
+
+<head>
+    <title>Marius Kriukovas ND 3</title>
+
+    <script src="libs/three.js"></script>
+    <script src="libs/jquery-1.9.0.js"></script>
+    <script src="libs/dat.gui.js"></script>
+    <script src="libs/TrackballControls.js"></script>
+    <script src="libs/stats.js"></script>
+    <script src="libs/ConvexGeometry.js"></script>
+
+    <style>
+        body {
+            /* set margin to 0 and overflow to hidden, to go fullscreen */
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Div which will hold the Output -->
+<div id="WebGL-output">
+</div>
+
+<!-- Javascript code that runs our Three.js examples -->
+<script type="text/javascript">
+
+    var scene = null;
+    var camera = null;
+    var renderer = null;
+    var gui = null;
+    var controls = null;
+    var cameraControls = null;
+    var pointsObj = null
+
+    var sphereObj;// TODO rename
+
+    var SphereArgs = { // TODO rename
+        radius : 2,
+        positionDiff : 10
+    }
+
+    function initRenderer() {
+        renderer = new THREE.WebGLRenderer();
+
+        renderer.setClearColor('rgb(240,248,255)', 1.0);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMapEnabled = true;
+    }
+
+    var planeGeometryArgs = {
+        width: 300,
+        height: 300,
+        widthSegments: 50,
+        heightSegments: 50
+    }
+
+    var beginArgs = {
+        z: 0,
+        x: 10,
+        y: 10
+    }
+
+    var planeMaterial = new THREE.MeshBasicMaterial(
+        {
+            color: 'rgb(143,143,143)',
+            side: THREE.DoubleSide,
+            wireframe : true
+        });
+
+
+    function initScene() {
+        scene = new THREE.Scene();
+
+        var planeGeometry = new THREE.PlaneGeometry(planeGeometryArgs.width, planeGeometryArgs.height, planeGeometryArgs.widthSegments, planeGeometryArgs.heightSegments)
+        var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+
+        plane.rotation.x = -0.5 * Math.PI;
+        plane.position.x = 0.1
+        plane.position.y = 0.1
+        plane.position.z = 0
+
+        scene.add(plane);
+
+        var ambiColor = 'rgb(12,12,12)'  // TODO trinti lauk
+        var ambientLight = new THREE.AmbientLight(ambiColor);
+        scene.add(ambientLight);
+
+        var spotLight = new THREE.SpotLight('rgb(255,255,255)', 1);  // TODO trinti lauk
+        spotLight.position.set(50, 80, 30);
+        spotLight.castShadow = true;
+        scene.add(spotLight);
+
+    }
+
+    function initCamera() {
+
+        camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+        camera.position.x = -50;
+        camera.position.y = 20;
+        camera.position.z = 100;
+
+        var cameraLookAtPosition = new THREE.Vector3(0, 0, 0);
+        camera.lookAt(cameraLookAtPosition);
+
+    }
+
+    controls = {
+        RODYTI_ASIS : false,
+        RODYTI_TINKLELI : true,
+        RODYTI_TASKUS : false,
+        SPINDULYS : 2
+    }
+
+    function initControls() {
+        gui = new dat.GUI();
+
+        gui.add(controls, 'RODYTI_ASIS')
+        gui.add(controls, 'RODYTI_TINKLELI')
+        gui.add(controls, 'RODYTI_TASKUS')
+        gui.add(controls, 'SPINDULYS', 1, 20);
+    }
+
+    function init() {
+        initScene()
+        initCamera()
+        initRenderer()
+        initControls()
+
+        $("#WebGL-output").append(renderer.domElement);
+        cameraControls = new THREE.TrackballControls(camera, renderer.domElement) // init after dom append
+    }
+
+    var axes = new THREE.AxisHelper(100)
+    function showAxesIfNessery(){
+        if(controls.RODYTI_ASIS){
+            scene.add(axes)
+        }else {
+            scene.remove(axes)
+        }
+    }
+
+    function showWireframeIfNessery(){
+        planeMaterial.wireframe = controls.RODYTI_TINKLELI;
+    }
+
+    var currentRadius = -1
+
+    function showSphere(){
+        if(currentRadius !== controls.SPINDULYS){
+            scene.remove(sphereObj)
+            SphereArgs.radius = currentRadius
+            sphereObj = createSphere()
+            scene.add(sphereObj)
+            currentRadius = controls.SPINDULYS
+        }
+    }
+
+    function showPointsIfNessery(){
+        if(controls.RODYTI_TASKUS){
+            scene.add(pointsObj);
+        }else {
+            scene.remove(pointsObj)
+        }
+    }
+
+    function render() {
+        showAxesIfNessery()
+        showWireframeIfNessery()
+        showPointsIfNessery()
+        showSphere()
+
+        renderer.render(scene, camera);
+        requestAnimationFrame(render);
+        cameraControls.update()
+    }
+
+    $(function () {
+        init()
+
+        sphereObj = createSphere()
+        scene.add(sphereObj)
+
+        render()
+    })
+
+    function addPoints(points)
+    {
+        var pointsGroup = new THREE.Object3D();
+        var material = new THREE.MeshBasicMaterial({
+            color: 'rgb(255,0,0)',
+            transparent: false}
+        )
+        points.forEach(function (point) {
+            var pointGeom = new THREE.SphereGeometry(0.2);
+            var pointMesh = new THREE.Mesh(pointGeom, material);
+            pointMesh.position = point;
+            pointsGroup.add(pointMesh);
+        });
+
+        pointsGroup.position.z = beginArgs.z //SphereArgs.radius * SphereArgs.positionDiff;
+        pointsGroup.position.x = beginArgs.x
+        pointsGroup.position.y = beginArgs.y
+
+        return pointsGroup
+    }
+
+
+    function generateRandomParameter(){
+        // kad patektu i sferos rezius
+        return - SphereArgs.radius + Math.random() * SphereArgs.radius * 2;
+    }
+
+    function getXYZ(arr, idx){
+        var t = arr.vertices[idx].clone().normalize()
+        return { x : t.x, y : t.y, z : t.z}
+    }
+
+    function checkDiff(a, b, uvs, diff){
+        return Math.abs(uvs[a].x - uvs[b].x) > diff
+    }
+
+    function adjustDiff(uvs, diff){
+        if (uvs[0].x > diff) {
+            uvs[0].x = uvs[0].x - 1;
+        }
+        if (uvs[1].x > diff){
+            uvs[1].x = uvs[1].x - 1;
+        }
+        if (uvs[2].x > diff){
+            uvs[2].x = uvs[2].x - 1;
+        }
+    }
+
+    function createSphere(){
+        var diff = 0.5
+        var n = 5000
+
+        var points = [];
+        for (var i = 0; i < n; i++){
+
+
+            var ranX = generateRandomParameter()
+            var ranY = generateRandomParameter()
+            var ranZ = generateRandomParameter()
+
+            //x2 + y2 + z2 − R2 = 0;
+            var sum = ranX ** 2 + ranY ** 2 + ranZ ** 2 - SphereArgs.radius**2
+            if (sum<=0) {
+                points.push(new THREE.Vector3(ranX, ranY, ranZ));
+            }
+        }
+        pointsObj = addPoints(points)
+
+        var sphereGeometry = new THREE.ConvexGeometry(points);
+        var faceVertexUvs = sphereGeometry.faceVertexUvs[ 0 ];
+
+        faceVertexUvs.forEach(
+            (uvs,i) => {
+                var face = sphereGeometry.faces[ i ]
+                for ( var j = 0; j < 3; j ++ ) {
+                    var par = null
+                    switch (j)
+                    {
+                        case 0: par = getXYZ(sphereGeometry,face.a)
+                            break
+                        case 1: par = getXYZ(sphereGeometry,face.b)
+                            break
+                        case 2:par = getXYZ(sphereGeometry,face.c)
+                            break
+                    }
+                    //φ = 2πu, u = φ / 2π
+                    uvs[ j ].x = (0.5 + (Math.atan2(par.z, par.x)) / (2 * Math.PI))
+                    //ψ = π(v − 1/2) (v − 1/2) = ψ / π  v = ψ / π  + 1/2
+                    uvs[ j ].y =  Math.asin(par.y) / Math.PI + 0.5
+                }
+                if (checkDiff(0, 1, uvs, diff) || checkDiff(1, 2, uvs, diff) || checkDiff(2, 0, uvs, diff)){
+                    adjustDiff(uvs,diff)
+                }
+            }
+        )
+
+        var sphereMesh = createSphereMesh(sphereGeometry)
+
+        sphereObj = new THREE.Object3D();
+        sphereObj.position.x = beginArgs.x
+        sphereObj.position.y = beginArgs.y
+        sphereObj.position.z = beginArgs.z //SphereArgs.radius * SphereArgs.positionDiff;
+        sphereObj.add(sphereMesh)
+        return sphereObj
+    }
+
+    function createSphereMesh(geom) {
+        var texture = THREE.ImageUtils.loadTexture(url = 'chess.png');
+        var material = new THREE.MeshPhongMaterial();
+        material.map = texture;
+
+        var wireFrameMat = new THREE.MeshBasicMaterial();
+        wireFrameMat.wireframe = false;
+
+        var sphereMesh= new THREE.SceneUtils.createMultiMaterialObject(geom, [material, wireFrameMat]);
+
+        sphereMesh.position.z = beginArgs.z //SphereArgs.radius * SphereArgs.positionDiff;
+        sphereMesh.position.x = beginArgs.x
+        sphereMesh.position.y = beginArgs.y
+        return sphereMesh;
+    }
+
+</script>
+</body>
+
+</html>

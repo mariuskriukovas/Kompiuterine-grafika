@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="13c68906-90a4-47ef-ba06-0819aceffa03" name="Default Changelist" comment="uploading ND 2;">
+      <change afterPath="$PROJECT_DIR$/ND3/libs/ConvexGeometry.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ND3/libs/TrackballControls.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ND3/libs/dat.gui.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ND3/libs/jquery-1.9.0.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ND3/libs/stats.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ND3/libs/three.js" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectId" id="1keQTeTtO7Fxbo1dkdQ9bivOt8x" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/ND3" />
+    <property name="vue.rearranger.settings.migration" value="true" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/ND3/src" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/ND3" />
+      <recent name="$PROJECT_DIR$/ND3/src" />
+      <recent name="$PROJECT_DIR$/ND2" />
+      <recent name="$PROJECT_DIR$/ND2/src" />
+    </key>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="13c68906-90a4-47ef-ba06-0819aceffa03" name="Default Changelist" comment="" />
+      <created>1606058586048</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1606058586048</updated>
+      <workItem from="1606058587149" duration="23504000" />
+      <workItem from="1606120685997" duration="2674000" />
+      <workItem from="1607774328339" duration="3000" />
+      <workItem from="1607784439725" duration="13621000" />
+      <workItem from="1607813745991" duration="7349000" />
+    </task>
+    <task id="LOCAL-00001" summary="uploading ND 2;">
+      <created>1606086717404</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1606086717404</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="uploading ND 2;" />
+    <option name="LAST_COMMIT_MESSAGE" value="uploading ND 2;" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="634" y="274" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1607802792099">
+      <screen x="0" y="23" width="1792" height="1012" />
+    </state>
+    <state x="634" y="274" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.23.1792.1012@0.23.1792.1012" timestamp="1607802792099" />
+    <state x="867" y="166" width="604" height="732" key="find.popup" timestamp="1607977784992">
+      <screen x="0" y="23" width="1792" height="1012" />
+    </state>
+    <state x="867" y="166" width="604" height="732" key="find.popup/0.23.1792.1012@0.23.1792.1012" timestamp="1607977784992" />
+    <state x="594" y="163" width="604" height="735" key="find.popup/0.23.1792.1017@0.23.1792.1017" timestamp="1606082783664" />
+    <state x="561" y="257" width="670" height="676" key="search.everywhere.popup" timestamp="1607789368478">
+      <screen x="0" y="23" width="1792" height="1012" />
+    </state>
+    <state x="561" y="257" width="670" height="676" key="search.everywhere.popup/0.23.1792.1012@0.23.1792.1012" timestamp="1607789368478" />
+  </component>
+</project>
