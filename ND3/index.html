@@ -39,7 +39,7 @@
     var sphereObj;
 
     var SphereArgs = {
-        radius : 2,
+        radius : 3,
         positionDiff : 10
     }
 
@@ -60,13 +60,13 @@
 
     var beginArgs = {
         z: 0,
-        x: 10,
-        y: 10
+        x: 0,
+        y: 5
     }
 
     var planeMaterial = new THREE.MeshBasicMaterial(
         {
-            color: 'rgb(143,143,143)',
+            color: 'rgb(182,182,182)',
             side: THREE.DoubleSide,
             wireframe : true
         });
@@ -85,12 +85,13 @@
 
         scene.add(plane);
 
-        var ambiColor = 'rgb(12,12,12)'
-        var ambientLight = new THREE.AmbientLight(ambiColor)
+        var ambientLight = new THREE.AmbientLight(0x404040 )
         scene.add(ambientLight);
 
         var spotLight = new THREE.SpotLight('rgb(255,255,255)', 1)
-        spotLight.position.set(50, 80, 30);
+        spotLight.position.x =  beginArgs.x + 20
+        spotLight.position.y =  beginArgs.y + 20
+        spotLight.position.z = beginArgs.z + 20
         spotLight.castShadow = true;
         scene.add(spotLight);
 
@@ -100,9 +101,9 @@
 
         camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-        camera.position.x = -50;
-        camera.position.y = 20;
-        camera.position.z = 100;
+        camera.position.x =  beginArgs.x + 20
+        camera.position.y =  beginArgs.y + 20
+        camera.position.z = beginArgs.z + 20
 
         var cameraLookAtPosition = new THREE.Vector3(0, 0, 0);
         camera.lookAt(cameraLookAtPosition);
@@ -110,10 +111,10 @@
     }
 
     controls = {
-        RODYTI_ASIS : false,
+        RODYTI_ASIS : true,
         RODYTI_TINKLELI : true,
         RODYTI_TASKUS : false,
-        SPINDULYS : 2
+        SPINDULYS : 3
     }
 
     function initControls() {
@@ -145,7 +146,7 @@
     }
 
     function showWireframeIfNessery(){
-        planeMaterial.wireframe = controls.RODYTI_TINKLELI;
+        planeMaterial.wireframe = controls.RODYTI_TINKLELI
     }
 
     var currentRadius = -1
@@ -182,6 +183,7 @@
     $(function () {
         init()
 
+        currentRadius = controls.SPINDULYS
         sphereObj = createSphere()
         scene.add(sphereObj)
 
@@ -192,11 +194,13 @@
     {
         var pointsGroup = new THREE.Object3D();
         var material = new THREE.MeshBasicMaterial({
-            color: 'rgb(255,0,0)',
-            transparent: false}
+                color: 'rgb(255,0,0)',
+                transparent: true
+            }
+
         )
         points.forEach(function (point) {
-            var pointGeom = new THREE.SphereGeometry(0.2);
+            var pointGeom = new THREE.SphereGeometry(0.1);
             var pointMesh = new THREE.Mesh(pointGeom, material);
             pointMesh.position = point;
             pointsGroup.add(pointMesh);
@@ -204,7 +208,7 @@
 
         pointsGroup.position.z = beginArgs.z //SphereArgs.radius * SphereArgs.positionDiff;
         pointsGroup.position.x = beginArgs.x
-        pointsGroup.position.y = beginArgs.y
+        pointsGroup.position.y = 0
 
         return pointsGroup
     }
@@ -243,7 +247,6 @@
         var points = [];
         for (var i = 0; i < n; i++){
 
-
             var ranX = generateRandomParameter()
             var ranY = generateRandomParameter()
             var ranZ = generateRandomParameter()
@@ -261,28 +264,28 @@
 
         faceVertexUvs.forEach(
             (uvs,i) => {
-                var face = sphereGeometry.faces[ i ]
-                for ( var j = 0; j < 3; j ++ ) {
-                    var par = null
-                    switch (j)
-                    {
-                        case 0: par = getXYZ(sphereGeometry,face.a)
-                            break
-                        case 1: par = getXYZ(sphereGeometry,face.b)
-                            break
-                        case 2:par = getXYZ(sphereGeometry,face.c)
-                            break
-                    }
-                    //φ = 2πu, u = φ / 2π
-                    uvs[ j ].x = (0.5 + (Math.atan2(par.z, par.x)) / (2 * Math.PI))
-                    //ψ = π(v − 1/2) (v − 1/2) = ψ / π  v = ψ / π  + 1/2
-                    uvs[ j ].y =  Math.asin(par.y) / Math.PI + 0.5
-                }
-                if (checkDiff(0, 1, uvs, diff) || checkDiff(1, 2, uvs, diff) || checkDiff(2, 0, uvs, diff)){
-                    adjustDiff(uvs,diff)
-                }
+            var face = sphereGeometry.faces[ i ]
+            for ( var j = 0; j < 3; j ++ ) {
+            var par = null
+            switch (j)
+            {
+                case 0: par = getXYZ(sphereGeometry,face.a)
+                    break
+                case 1: par = getXYZ(sphereGeometry,face.b)
+                    break
+                case 2:par = getXYZ(sphereGeometry,face.c)
+                    break
             }
-        )
+            //φ = 2πu, u = φ / 2π
+            uvs[ j ].x = (0.5 + (Math.atan2(par.z, par.x)) / (2 * Math.PI))
+            //ψ = π(v − 1/2) (v − 1/2) = ψ / π  v = ψ / π  + 1/2
+            uvs[ j ].y =  Math.asin(par.y) / Math.PI + 0.5
+        }
+        if (checkDiff(0, 1, uvs, diff) || checkDiff(1, 2, uvs, diff) || checkDiff(2, 0, uvs, diff)){
+            adjustDiff(uvs,diff)
+        }
+    }
+    )
 
         var sphereMesh = createSphereMesh(sphereGeometry)
 
