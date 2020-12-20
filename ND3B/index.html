@@ -1,0 +1,395 @@
+<html>
+
+<head>
+    <title>Marius Kriukovas ND3 B </title>
+
+    <script src="libs/three.min.js"></script>
+    <script src="libs/jquery-1.9.0.js"></script>
+    <script src="libs/dat.gui.js"></script>
+    <script src="libs/TrackballControls.js"></script>
+    <script src="libs/stats.js"></script>
+    <script src="libs/ConvexGeometry.js"></script>
+
+    <style>
+        body {
+            /* set margin to 0 and overflow to hidden, to go fullscreen */
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Div which will hold the Output -->
+<div id="WebGL-output">
+</div>
+
+<!-- Javascript code that runs our Three.js examples -->
+<script type="text/javascript">
+
+    var scene = null;
+    var camera = null;
+    var renderer = null;
+    var gui = null;
+    var controls = null;
+    var cameraControls = null;
+    var distance = 100
+
+
+    function initRenderer() {
+        renderer = new THREE.WebGLRenderer();
+        renderer.setClearColor('rgb(240,248,255)', 1.0);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMapEnabled = true;
+    }
+
+    var planeGeometryArgs = {
+        width: 400,
+        height: 400,
+        widthSegments: 50,
+        heightSegments: 50
+    }
+
+    var beginArgs = {
+        z: 0,
+        x: 0,
+        y: 5
+    }
+
+    var planeMaterial = new THREE.MeshBasicMaterial(
+        {
+            color: 'rgb(182,182,182)',
+            side: THREE.DoubleSide,
+            wireframe : true
+        });
+
+
+    function initScene() {
+        scene = new THREE.Scene();
+
+        var planeGeometry = new THREE.PlaneGeometry(planeGeometryArgs.width, planeGeometryArgs.height, planeGeometryArgs.widthSegments, planeGeometryArgs.heightSegments)
+        var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+
+        plane.rotation.x = -0.5 * Math.PI;
+        plane.position.x = 0.1
+        plane.position.y = 0.1
+        plane.position.z = 0
+
+        scene.add(plane);
+
+        var ambientLight = new THREE.AmbientLight(0x404040 )
+        scene.add(ambientLight);
+
+        var spotLight = new THREE.SpotLight('rgb(255,255,255)', 1)
+        spotLight.position.x =  beginArgs.x + distance
+        spotLight.position.y =  beginArgs.y + distance
+        spotLight.position.z = beginArgs.z + distance
+        spotLight.castShadow = true;
+        scene.add(spotLight);
+
+    }
+
+    function cameraInitPosition() {
+        camera.position.x =  beginArgs.x + distance
+        camera.position.y =  beginArgs.y + distance - 50
+        camera.position.z = beginArgs.z + distance
+    }
+
+    //var camObject = null;
+    var zeroCameraPoint =  new THREE.Vector3(0, 0, 0);
+    function initCamera() {
+        camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        cameraInitPosition()
+        camera.lookAt(zeroCameraPoint);
+
+        // var box = new THREE.Object3D();
+        // var loader = new THREE.OBJLoader();
+        // loader.load('camera.obj', function (geo) {
+        //     mesh = geo;
+        //     mesh.rotation.y = Math.PI;
+        //     mesh.position.y = -11.3;
+        //     box.add(mesh);
+        // });
+        //
+        // var axes = new THREE.AxisHelper( 60 );
+        // box.add(axes);
+        // box.rotation.y = Math.PI;
+        // camObject = new THREE.Object3D();
+        // camObject.add(box);
+        // camObject.scale.set(0.05, 0.05, 0.05);
+        // camObject.position.y = 12;
+        //scene.add(camObject);
+    }
+
+    var cameraModeNum = 0
+    var currentCameraModeNum = -1
+    var currentZOOM = false
+    var numberOfCombs = 5
+
+    controls = {
+        RODYTI_ASIS : true,
+        RODYTI_TINKLELI : true,
+        ZOOM : false,
+        cameraModeScreen : "M" + cameraModeNum.toString(),
+        cameraMode : function () {
+            cameraModeNum = (cameraModeNum + 1) % numberOfCombs
+        },
+        JUDETI : false,
+        SEKTIKAMERA : false
+    }
+
+    function initControls() {
+        gui = new dat.GUI();
+
+        gui.add(controls, 'RODYTI_ASIS')
+        gui.add(controls, 'RODYTI_TINKLELI')
+        gui.add(controls, 'cameraModeScreen').name("POZICIJA").listen();
+        gui.add(controls, 'cameraMode').name("KEISTI KAMEROS POZICIJA")
+        gui.add(controls, 'ZOOM')
+        gui.add(controls, 'JUDETI')
+        gui.add(controls, 'SEKTIKAMERA')
+    }
+
+    function init() {
+        initScene()
+        initCamera()
+        initRenderer()
+        initControls()
+
+        $("#WebGL-output").append(renderer.domElement);
+        cameraControls = new THREE.TrackballControls(camera, renderer.domElement) // init after dom append
+    }
+
+    var axes = new THREE.AxisHelper(100)
+    function showAxesIfNessery(){
+        if(controls.RODYTI_ASIS){
+            scene.add(axes)
+        }else {
+            scene.remove(axes)
+        }
+    }
+
+    function showWireframeIfNecessary(){
+        planeMaterial.wireframe = controls.RODYTI_TINKLELI
+    }
+
+    function handleCameraMode(){
+        if(currentCameraModeNum !== cameraModeNum)
+        {
+            controls.cameraModeScreen = "M" + cameraModeNum.toString()
+            currentCameraModeNum = cameraModeNum
+
+            switch (cameraModeNum) {
+                case 0:
+                    cameraInitPosition()
+                    break
+                case 1:
+                    camera.position.x =  7 * boardArgs.blockSize
+                    camera.position.z = 7 * boardArgs.blockSize
+                    camera.position.y =  200
+                    break
+                case 2:
+                    camera.position.x = 0
+                    camera.position.z = 7 * boardArgs.blockSize
+                    camera.position.y =  200
+                    break
+                case 3:
+                    camera.position.x = 7 * boardArgs.blockSize
+                    camera.position.z = 0
+                    camera.position.y =  200
+                    break
+
+                case 4:
+                    camera.position.x =  (7 * boardArgs.blockSize) / 2
+                    camera.position.z = (7 * boardArgs.blockSize) / 2
+                    camera.position.y =  200
+                    break
+            }
+        }
+    }
+
+
+    var camDeltaX = null
+    var camDeltaY = null
+    var camDeltaZ = null
+    function countCameraDelta() {
+        camDeltaX = ((beginArgs.x + distance) - camera.position.x) / 100
+        camDeltaY = ((beginArgs.y + distance - 50) - camera.position.y) / 100
+        camDeltaZ = ((beginArgs.z + distance) - camera.position.z) / 100
+    }
+
+    function zooming() {
+        if(currentZOOM !== controls.ZOOM){
+            countCameraDelta()
+            currentZOOM = controls.ZOOM
+        }
+        if(controls.ZOOM)
+        {
+            if(Math.abs(camera.position.x - (beginArgs.x + distance)) < 2 &&
+               Math.abs(( camera.position.y - (beginArgs.y + distance - 50)))<2 &&
+               Math.abs((camera.position.z - (beginArgs.z + distance))) <2 )
+            {
+                controls.cameraModeScreen = "M0"
+                controls.ZOOM = false
+            }else {
+                camera.position.x += camDeltaX
+                camera.position.y += camDeltaY
+                camera.position.z += camDeltaZ
+            }
+        }
+    }
+
+    function bishopMoveIfNecessary() {
+        if(controls.JUDETI){
+            bishopMove()
+        }
+    }
+
+    function adjustCameraIfNecessary() {
+        if(controls.SEKTIKAMERA){
+            camera.lookAt(bishopObj.position)
+        }
+    }
+
+    function render() {
+        showAxesIfNessery()
+        showWireframeIfNecessary()
+        handleCameraMode()
+        bishopMoveIfNecessary()
+        adjustCameraIfNecessary()
+        renderer.render(scene, camera)
+        requestAnimationFrame(render)
+        zooming()
+        cameraControls.update()
+    }
+
+    $(function () {
+        init()
+        bishopObj = generateBishop()
+        scene.add(bishopObj)
+        countBishopDelta()
+
+        boardObj = makeBoard()
+        scene.add(boardObj)
+        render()
+    })
+
+
+    var BishopArgs = {
+        pointsX : [
+            250, 275, 280, 270, 285,
+            305, 320, 320, 310, 305,
+            310, 295, 295, 315, 315,
+            335, 325, 285, 290, 295,
+            310, 325, 320, 365, 355,
+            365, 365, 250],
+        pointsY : [
+            0, 15, 25, 35, 55,
+            80, 110, 141, 166, 176,
+            186, 191, 211, 216, 226,
+            236, 251, 256, 296, 336,
+            381, 386, 406, 451, 466,
+            471, 496, 500],
+        bishopColor : "rgb(227,218,201)"
+    }
+
+    var bishopObj = null
+
+    function generateBishop()
+    {
+        var pointsX = BishopArgs.pointsX.map(x=> 25 - x/10)
+        var pointsY = BishopArgs.pointsY.map(y=> (-y+100)/10)
+
+        var points = []
+        for (var i = 0; i < pointsX.length; i++) {
+            points.push(new THREE.Vector3(pointsX[i], 0, pointsY[i]))
+        }
+
+        var bishopGeometry = new THREE.LatheGeometry(points, Math.ceil(pointsX.length), 0, 2 * Math.PI);
+        var bishopMaterial = new THREE.MeshPhongMaterial(
+            {
+                color: BishopArgs.bishopColor,
+                shininess : 100,
+                side : THREE.DoubleSide,
+            })
+
+        var bishopMesh = new THREE.Mesh(bishopGeometry, bishopMaterial)
+        bishopMesh.castShadow = true;
+        //bishopMesh.receiveShadow = true;
+
+        bishopMesh.rotation.x = -0.5 * Math.PI;
+        bishopMesh.position.z = beginArgs.z
+        bishopMesh.position.x = beginArgs.x
+        bishopMesh.position.y = beginArgs.y + 34 + (boardArgs.height*2)
+
+        return bishopMesh
+    }
+
+    var bishopDeltaX = null
+    var bishopDeltaZ = null
+
+    function countBishopDelta() {
+        bishopDeltaX = (7 * boardArgs.blockSize - bishopObj.position.x) / 100
+        bishopDeltaZ = (7 * boardArgs.blockSize - bishopObj.position.z) / 100
+    }
+    function bishopMove() {
+        if(Math.abs(7 * boardArgs.blockSize - bishopObj.position.x) < 1 ){
+            bishopDeltaX *=-1
+        }
+        if(Math.abs(7 * boardArgs.blockSize - bishopObj.position.z) < 1 ){
+            bishopDeltaZ *=-1
+        }
+        if(bishopObj.position.x < 0 ){
+            bishopDeltaX *=-1
+        }
+        if(bishopObj.position.z < 0 ){
+            bishopDeltaZ *=-1
+        }
+        bishopObj.position.x += bishopDeltaX
+        bishopObj.position.z += bishopDeltaZ
+    }
+
+    var boardObj = null;
+    var boardArgs = {
+        blockSize: 25,
+        blocGeometry : new THREE.BoxGeometry(25, 4, 25),
+        blackMaterial :  new THREE.MeshLambertMaterial({color: "rgb(0,0,0)"}),
+        whiteMaterial :  new THREE.MeshLambertMaterial({color: "rgb(255,255,255)"}),
+        height: 2.5,
+    }
+
+
+    function makeBoard() {
+        var boardGroup = new THREE.Object3D()
+
+        var isWhite = true
+        var block = null
+        for (i = 0; i < 8; i++) {
+            for (j = 0; j < 8; j++) {
+                if(isWhite){
+                    block = new THREE.Mesh(boardArgs.blocGeometry, boardArgs.blackMaterial)
+                    isWhite = false
+                }else {
+                    block = new THREE.Mesh(boardArgs.blocGeometry, boardArgs.whiteMaterial)
+                    isWhite = true
+                }
+
+                block.receiveShadow = true;
+                block.castShadow = true;
+                block.rotation.x = Math.PI;
+                block.position.x =  j * boardArgs.blockSize
+                block.position.y = 0;
+                block.position.z = i * boardArgs.blockSize
+                boardGroup.add(block);
+            }
+            isWhite = !isWhite;
+        }
+        boardGroup.position.y = boardArgs.height
+        return boardGroup
+    }
+
+</script>
+</body>
+
+</html>
