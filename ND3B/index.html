@@ -3,12 +3,14 @@
 <head>
     <title>Marius Kriukovas ND3 B </title>
 
-    <script src="libs/three.min.js"></script>
-    <script src="libs/jquery-1.9.0.js"></script>
-    <script src="libs/dat.gui.js"></script>
-    <script src="libs/TrackballControls.js"></script>
-    <script src="libs/stats.js"></script>
-    <script src="libs/ConvexGeometry.js"></script>
+    <script src="../ND3B/libs/three.min.js"></script>
+    <script src="../ND3B/libs/three.js"></script>
+    <script src="../ND3B/libs/jquery-1.9.0.js"></script>
+    <script src="../ND3B/libs/dat.gui.js"></script>
+    <script src="../ND3B/libs/TrackballControls.js"></script>
+    <script src="../ND3B/libs/stats.js"></script>
+    <script src="../ND3B/libs/ConvexGeometry.js"></script>
+    <script src="../ND3B/libs/OBJLoader.js"></script>
 
     <style>
         body {
@@ -28,13 +30,14 @@
 <!-- Javascript code that runs our Three.js examples -->
 <script type="text/javascript">
 
-    var scene = null;
-    var camera = null;
-    var renderer = null;
-    var gui = null;
-    var controls = null;
-    var cameraControls = null;
-    var distance = 100
+    let scene = null;
+    let camera = null;
+    let renderer = null;
+    let gui = null;
+    let controls = null;
+
+    //objects
+    var cameraObj = null
 
 
     function initRenderer() {
@@ -44,26 +47,55 @@
         renderer.shadowMapEnabled = true;
     }
 
-    var planeGeometryArgs = {
+    const planeGeometryArgs = {
         width: 400,
         height: 400,
         widthSegments: 50,
         heightSegments: 50
     }
 
-    var beginArgs = {
+    const beginArgs = {
         z: 0,
         x: 0,
         y: 5
     }
 
-    var planeMaterial = new THREE.MeshBasicMaterial(
+    const planeMaterial = new THREE.MeshBasicMaterial(
         {
             color: 'rgb(182,182,182)',
             side: THREE.DoubleSide,
             wireframe : true
         });
 
+    function addPoint(point, size = 5)
+    {
+        var pointsGroup = new THREE.Object3D();
+        var material = new THREE.MeshBasicMaterial({
+                color: 'rgb(255,0,0)',
+                transparent: true
+            }
+
+        )
+        var pointGeom = new THREE.SphereGeometry(size);
+        var pointMesh = new THREE.Mesh(pointGeom, material);
+        pointMesh.position = point;
+        pointsGroup.add(pointMesh);
+        return pointsGroup
+    }
+
+    function addLight(pos, showPoint = false)
+    {
+        const spotLight = new THREE.SpotLight('rgb(255,255,255)', 1)
+        setPost(spotLight, pos)
+        spotLight.castShadow = true;
+        scene.add(spotLight);
+
+        if(showPoint){
+            var point = addPoint(new THREE.Vector3(0, 0, 0))
+            setPost(point,pos)
+            scene.add(point)
+        }
+    }
 
     function initScene() {
         scene = new THREE.Scene();
@@ -78,77 +110,82 @@
 
         scene.add(plane);
 
-        var ambientLight = new THREE.AmbientLight(0x404040 )
+        var ambientLight = new THREE.AmbientLight( "rgb(0,0,0)" )
         scene.add(ambientLight);
 
-        var spotLight = new THREE.SpotLight('rgb(255,255,255)', 1)
-        spotLight.position.x =  beginArgs.x + distance
-        spotLight.position.y =  beginArgs.y + distance
-        spotLight.position.z = beginArgs.z + distance
-        spotLight.castShadow = true;
-        scene.add(spotLight);
-
+        addLight(posObj(-250, 250,  250), true)
+        addLight(posObj(250, 250,  250), true)
     }
 
-    function cameraInitPosition() {
-        camera.position.x =  beginArgs.x + distance
-        camera.position.y =  beginArgs.y + distance - 50
-        camera.position.z = beginArgs.z + distance
-    }
+    let currentCameraPositionIdx = 0
+    const cameraPositions = []
 
-    //var camObject = null;
-    var zeroCameraPoint =  new THREE.Vector3(0, 0, 0);
-    function initCamera() {
-        camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        cameraInitPosition()
+    const cameraArr = []
+    let currentCamera = 0
+
+    const zeroCameraPoint =  new THREE.Vector3(0, 0, 0);
+    function createCamera(pos) {
+        let camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        setPost(camera, pos)
         camera.lookAt(zeroCameraPoint);
-
-        // var box = new THREE.Object3D();
-        // var loader = new THREE.OBJLoader();
-        // loader.load('camera.obj', function (geo) {
-        //     mesh = geo;
-        //     mesh.rotation.y = Math.PI;
-        //     mesh.position.y = -11.3;
-        //     box.add(mesh);
-        // });
-        //
-        // var axes = new THREE.AxisHelper( 60 );
-        // box.add(axes);
-        // box.rotation.y = Math.PI;
-        // camObject = new THREE.Object3D();
-        // camObject.add(box);
-        // camObject.scale.set(0.05, 0.05, 0.05);
-        // camObject.position.y = 12;
-        //scene.add(camObject);
+        return camera
     }
 
-    var cameraModeNum = 0
-    var currentCameraModeNum = -1
-    var currentZOOM = false
-    var numberOfCombs = 5
+    function createCameraObj(camera, representation, pos) {
+        return {camera, representation, position: pos}
+    }
+
+    function initCamera() {
+        let posC0 = posObj(0,500,100)
+        cameraArr.push(createCameraObj(createCamera(posC0), null, posC0))
+        let posC1 = posObj(7 * boardArgs.blockSize, 200,  7 * boardArgs.blockSize)
+        cameraArr.push(createCameraObj(createCamera(posC1), null, posC1))
+        let posC2 = posObj(0,200, 7 * boardArgs.blockSize)
+        cameraArr.push(createCameraObj(createCamera(posC2), null, posC2))
+        let posC3 = posObj(7 * boardArgs.blockSize,200, 0)
+        cameraArr.push(createCameraObj(createCamera(posC3), null, posC3))
+        let posC4 = posObj((7 * boardArgs.blockSize) / 2, 200,(7 * boardArgs.blockSize) / 2 )
+        cameraArr.push(createCameraObj(createCamera(posC4), null, posC4))
+    }
+
+    function getCurrentCamera() {
+        return cameraArr[currentCamera].camera
+    }
+    function getCurrentCameraControls() {
+        return cameraArr[currentCamera].cameraControls
+    }
+    function getCurrentCameraPosition() {
+        return cameraArr[currentCamera].position
+    }
+
+    const maxZoom = 200
+    const numberOfCameras = 5
 
     controls = {
         RODYTI_ASIS : true,
         RODYTI_TINKLELI : true,
-        ZOOM : false,
-        cameraModeScreen : "M" + cameraModeNum.toString(),
+        ZOOM : 0,
+        freeCamera : true,
+        cameraModeScreen : "C" + currentCamera.toString(),
         cameraMode : function () {
-            cameraModeNum = (cameraModeNum + 1) % numberOfCombs
+            currentCamera = (currentCamera + 1) % numberOfCameras
         },
         JUDETI : false,
-        SEKTIKAMERA : false
+        SEKTIKAMERA : false,
+        FOV : 0,
     }
 
     function initControls() {
         gui = new dat.GUI();
-
         gui.add(controls, 'RODYTI_ASIS')
         gui.add(controls, 'RODYTI_TINKLELI')
         gui.add(controls, 'cameraModeScreen').name("POZICIJA").listen();
         gui.add(controls, 'cameraMode').name("KEISTI KAMEROS POZICIJA")
-        gui.add(controls, 'ZOOM')
+        gui.add(controls, 'freeCamera').name("LAISVA KAMERA")
         gui.add(controls, 'JUDETI')
         gui.add(controls, 'SEKTIKAMERA')
+        gui.add(controls, 'ZOOM', 0, maxZoom)
+        gui.add(controls, 'FOV', -100, 100).name("+/-FOV")
     }
 
     function init() {
@@ -156,17 +193,18 @@
         initCamera()
         initRenderer()
         initControls()
-
         $("#WebGL-output").append(renderer.domElement);
-        cameraControls = new THREE.TrackballControls(camera, renderer.domElement) // init after dom append
+        cameraArr.forEach(x=>{x.cameraControls = new THREE.TrackballControls(x.camera, renderer.domElement)})
     }
 
     var axes = new THREE.AxisHelper(100)
     function showAxesIfNessery(){
         if(controls.RODYTI_ASIS){
             scene.add(axes)
+            cameraObj.add(cameraAxis)
         }else {
             scene.remove(axes)
+            cameraObj.remove(cameraAxis)
         }
     }
 
@@ -174,104 +212,162 @@
         planeMaterial.wireframe = controls.RODYTI_TINKLELI
     }
 
-    function handleCameraMode(){
-        if(currentCameraModeNum !== cameraModeNum)
-        {
-            controls.cameraModeScreen = "M" + cameraModeNum.toString()
-            currentCameraModeNum = cameraModeNum
+    const distance = 50
+    let camDeltaX = null, camDeltaY = null, camDeltaZ = null
 
-            switch (cameraModeNum) {
-                case 0:
-                    cameraInitPosition()
-                    break
-                case 1:
-                    camera.position.x =  7 * boardArgs.blockSize
-                    camera.position.z = 7 * boardArgs.blockSize
-                    camera.position.y =  200
-                    break
-                case 2:
-                    camera.position.x = 0
-                    camera.position.z = 7 * boardArgs.blockSize
-                    camera.position.y =  200
-                    break
-                case 3:
-                    camera.position.x = 7 * boardArgs.blockSize
-                    camera.position.z = 0
-                    camera.position.y =  200
-                    break
-
-                case 4:
-                    camera.position.x =  (7 * boardArgs.blockSize) / 2
-                    camera.position.z = (7 * boardArgs.blockSize) / 2
-                    camera.position.y =  200
-                    break
-            }
-        }
+    function initCameraDelta() {
+        //getCurrentCamera().lookAt(bishopObj.position)
+        camDeltaX = (( bishopObj.position.x + distance ) - getCurrentCamera().position.x) / maxZoom
+        camDeltaY = (( bishopObj.position.y + distance ) - getCurrentCamera().position.y) / maxZoom
+        camDeltaZ = (( bishopObj.position.z + distance ) - getCurrentCamera().position.z) / maxZoom
+        console.log([camDeltaX, camDeltaY, camDeltaZ])
     }
 
+    let curr = null
+    let oneTime = true
+    function distanceVector( v1, v2 )
+    {
+        var dx = v1.x - v2.x;
+        var dy = v1.y - v2.y;
+        var dz = v1.z - v2.z;
 
-    var camDeltaX = null
-    var camDeltaY = null
-    var camDeltaZ = null
-    function countCameraDelta() {
-        camDeltaX = ((beginArgs.x + distance) - camera.position.x) / 100
-        camDeltaY = ((beginArgs.y + distance - 50) - camera.position.y) / 100
-        camDeltaZ = ((beginArgs.z + distance) - camera.position.z) / 100
+        return Math.sqrt( dx * dx + dy * dy + dz * dz );
     }
 
     function zooming() {
-        if(currentZOOM !== controls.ZOOM){
-            countCameraDelta()
-            currentZOOM = controls.ZOOM
+        if(oneTime){
+            initCameraDelta()
+            curr  = getCurrentCamera().position.clone()
+            oneTime = false
+            console.log(curr)
         }
-        if(controls.ZOOM)
-        {
-            if(Math.abs(camera.position.x - (beginArgs.x + distance)) < 2 &&
-               Math.abs(( camera.position.y - (beginArgs.y + distance - 50)))<2 &&
-               Math.abs((camera.position.z - (beginArgs.z + distance))) <2 )
-            {
-                controls.cameraModeScreen = "M0"
-                controls.ZOOM = false
-            }else {
-                camera.position.x += camDeltaX
-                camera.position.y += camDeltaY
-                camera.position.z += camDeltaZ
-            }
+
+        //0.19, -2.23, -0.31
+        getCurrentCamera().position.x = curr.x + (camDeltaX * controls.ZOOM)
+        getCurrentCamera().position.y = curr.y + (camDeltaY * controls.ZOOM)
+        getCurrentCamera().position.z = curr.z + (camDeltaZ * controls.ZOOM)
+
+        if(controls.FOV !== 0){
+            let distance =  distanceVector(getCurrentCamera().position, bishopObj.position)
+            let width = 25
+
+            let fov = (Math.atan((distance / width) / 2) * (180/Math.PI))/2
+            fov += controls.FOV
+
+            getCurrentCamera().fov = fov
+            getCurrentCamera().updateProjectionMatrix();
         }
     }
 
+
+    var engine = 0
     function bishopMoveIfNecessary() {
         if(controls.JUDETI){
-            bishopMove()
+            setCameraObjRotation(engine)
+            setBishopMovement(engine)
+            engine++
+            engine %= 200
         }
     }
+
+    let cameraDeltaXArr = [],  cameraDeltaYArr = [],  cameraDeltaZArr = []
+    function countCameraMovingDelta(){
+        let cameraDeltaX =  (0.9621508718990974 - cameraObj.rotation.x) / 100
+        let cameraDeltaY =  (0.5668969995446037 - cameraObj.rotation.y) / 100
+        let cameraDeltaZ =  (-0.40223430182915615 - cameraObj.rotation.z) / 100
+
+        for (i = 0; i < 100; i++){
+            cameraDeltaXArr.push(cameraObj.rotation.x + (cameraDeltaX * i))
+            cameraDeltaYArr.push(cameraObj.rotation.y + (cameraDeltaY * i))
+            cameraDeltaZArr.push(cameraObj.rotation.z + (cameraDeltaZ * i))
+        }
+
+        for (i = 0; i < 100; i++){
+            cameraDeltaXArr.push(cameraDeltaXArr[99] - (cameraDeltaX * i))
+            cameraDeltaYArr.push(cameraDeltaYArr[99] - (cameraDeltaY * i))
+            cameraDeltaZArr.push(cameraDeltaZArr[99] - (cameraDeltaZ * i))
+        }
+    }
+    function setCameraObjRotation(idx){
+        cameraObj.rotation.x = cameraDeltaXArr[idx]
+        cameraObj.rotation.y = cameraDeltaYArr[idx]
+        cameraObj.rotation.z = cameraDeltaZArr[idx]
+    }
+
 
     function adjustCameraIfNecessary() {
         if(controls.SEKTIKAMERA){
-            camera.lookAt(bishopObj.position)
+            getCurrentCamera().lookAt(bishopObj.position)
+        }
+    }
+
+    let cameraAxis = new THREE.AxisHelper( 60 );
+
+    function initRealCamera(){
+        const cameraObj = new THREE.Object3D();
+        const loader = new THREE.OBJLoader();
+
+        loader.load('camera.obj', function (geo) {
+            mesh = geo;
+            //mesh.rotation.y = Math.PI;
+            mesh.position.y = -11.3;
+            mesh.scale.x *= 0.5;
+            mesh.scale.y *= 0.5;
+            mesh.scale.z *= 0.5;
+            cameraObj.add(mesh);
+        });
+
+        // var axes = new THREE.AxisHelper( 60 );
+        // cameraObj.add(axes)
+
+        setPost(cameraObj, boardCenterPosition )
+        return cameraObj
+    }
+
+    let previousCamera = -1
+    function handleCameraMode(){
+        if(previousCamera !== currentCamera)  {
+            previousCamera = currentCamera
+            controls.cameraModeScreen = "C" + currentCamera.toString()
+            oneTime = true
+
+            getCurrentCameraControls().reset()
+            getCurrentCamera().lookAt(zeroCameraPoint);
+            getCurrentCameraControls().update()
         }
     }
 
     function render() {
+
         showAxesIfNessery()
         showWireframeIfNecessary()
-        handleCameraMode()
         bishopMoveIfNecessary()
         adjustCameraIfNecessary()
-        renderer.render(scene, camera)
+        if(!controls.freeCamera)
+        {
+            zooming()
+        }
+        handleCameraMode()
+        renderer.render(scene, getCurrentCamera())
         requestAnimationFrame(render)
-        zooming()
-        cameraControls.update()
+        getCurrentCameraControls().update()
     }
 
     $(function () {
         init()
+
         bishopObj = generateBishop()
         scene.add(bishopObj)
         countBishopDelta()
 
         boardObj = makeBoard()
         scene.add(boardObj)
+
+        cameraObj = initRealCamera()
+        cameraObj.lookAt(bishopObj.position);
+        scene.add(cameraObj);
+        countCameraMovingDelta()
+
         render()
     })
 
@@ -291,7 +387,7 @@
             236, 251, 256, 296, 336,
             381, 386, 406, 451, 466,
             471, 496, 500],
-        bishopColor : "rgb(227,218,201)"
+        bishopColor : "rgb(255,255,255)"
     }
 
     var bishopObj = null
@@ -306,8 +402,8 @@
             points.push(new THREE.Vector3(pointsX[i], 0, pointsY[i]))
         }
 
-        var bishopGeometry = new THREE.LatheGeometry(points, Math.ceil(pointsX.length), 0, 2 * Math.PI);
-        var bishopMaterial = new THREE.MeshPhongMaterial(
+        var bishopGeometry = new THREE.LatheGeometry(points, Math.ceil(pointsX.length), 0, 2.2 * Math.PI);
+        var bishopMaterial = new THREE.MeshLambertMaterial(
             {
                 color: BishopArgs.bishopColor,
                 shininess : 100,
@@ -316,7 +412,7 @@
 
         var bishopMesh = new THREE.Mesh(bishopGeometry, bishopMaterial)
         bishopMesh.castShadow = true;
-        //bishopMesh.receiveShadow = true;
+        bishopMesh.receiveShadow = true;
 
         bishopMesh.rotation.x = -0.5 * Math.PI;
         bishopMesh.position.z = beginArgs.z
@@ -326,39 +422,36 @@
         return bishopMesh
     }
 
-    var bishopDeltaX = null
-    var bishopDeltaZ = null
-
+    let bishopDeltaXArr = [],  bishopDeltaZArr = []
     function countBishopDelta() {
-        bishopDeltaX = (7 * boardArgs.blockSize - bishopObj.position.x) / 100
-        bishopDeltaZ = (7 * boardArgs.blockSize - bishopObj.position.z) / 100
+        let bishopDeltaX = (7 * boardArgs.blockSize - bishopObj.position.x) / 100
+        let bishopDeltaZ = (7 * boardArgs.blockSize - bishopObj.position.z) / 100
+
+        for (i = 0; i < 100; i++){
+            bishopDeltaXArr.push((bishopDeltaX * i))
+            bishopDeltaZArr.push((bishopDeltaZ * i))
+        }
+
+        for (i = 1; i < 101; i++){
+            bishopDeltaXArr.push(bishopDeltaXArr[99]-(bishopDeltaX * i))
+            bishopDeltaZArr.push(bishopDeltaZArr[99]-(bishopDeltaZ * i))
+        }
     }
-    function bishopMove() {
-        if(Math.abs(7 * boardArgs.blockSize - bishopObj.position.x) < 1 ){
-            bishopDeltaX *=-1
-        }
-        if(Math.abs(7 * boardArgs.blockSize - bishopObj.position.z) < 1 ){
-            bishopDeltaZ *=-1
-        }
-        if(bishopObj.position.x < 0 ){
-            bishopDeltaX *=-1
-        }
-        if(bishopObj.position.z < 0 ){
-            bishopDeltaZ *=-1
-        }
-        bishopObj.position.x += bishopDeltaX
-        bishopObj.position.z += bishopDeltaZ
+    function setBishopMovement(idx){
+        bishopObj.position.x = bishopDeltaXArr[idx]
+        bishopObj.position.z = bishopDeltaZArr[idx]
     }
 
     var boardObj = null;
     var boardArgs = {
         blockSize: 25,
-        blocGeometry : new THREE.BoxGeometry(25, 4, 25),
+        blocGeometry : new THREE.CubeGeometry(25, 4, 25),
         blackMaterial :  new THREE.MeshLambertMaterial({color: "rgb(0,0,0)"}),
         whiteMaterial :  new THREE.MeshLambertMaterial({color: "rgb(255,255,255)"}),
         height: 2.5,
     }
 
+    var boardCenterPosition = null
 
     function makeBoard() {
         var boardGroup = new THREE.Object3D()
@@ -386,7 +479,20 @@
             isWhite = !isWhite;
         }
         boardGroup.position.y = boardArgs.height
+
+        boardCenterPosition = posObj(boardArgs.blockSize*3.5, 150 ,boardArgs.blockSize*3.5)
+        //boardCenterPosition = p
         return boardGroup
+    }
+
+    function setPost(x, y) {
+        x.position.x = y.x
+        x.position.y = y.y
+        x.position.z = y.z
+    }
+
+    function posObj(x, y, z) {
+        return new THREE.Vector3(x, y, z)
     }
 
 </script>
